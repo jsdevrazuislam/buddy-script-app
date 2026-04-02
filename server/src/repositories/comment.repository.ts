@@ -1,12 +1,40 @@
 import { Comment, User } from '../models';
+import sequelize from '../config/database';
 
 class CommentRepository {
   async create(commentData: Parameters<typeof Comment.create>[0]): Promise<Comment> {
     return await Comment.create(commentData);
   }
 
-  async findByIdWithUser(id: string): Promise<Comment | null> {
+  async findByIdWithUser(id: string, userId: string): Promise<Comment | null> {
     return await Comment.findByPk(id, {
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT CAST(COUNT(*) AS INTEGER)
+              FROM likes AS l
+              WHERE
+                l."targetId" = "Comment"."id"
+                AND l."targetType" = 'COMMENT'
+            )`),
+            'likesCount',
+          ],
+          [
+            sequelize.literal(`(
+              SELECT EXISTS(
+                SELECT 1
+                FROM likes AS l
+                WHERE
+                  l."targetId" = "Comment"."id"
+                  AND l."targetType" = 'COMMENT'
+                  AND l."userId" = '${userId.replace(/'/g, "''")}'
+              )
+            )`),
+            'isLiked',
+          ],
+        ],
+      },
       include: [
         {
           model: User,
@@ -21,7 +49,12 @@ class CommentRepository {
     return await Comment.findByPk(id);
   }
 
-  async findByPostId(postId: string, limit?: number, offset?: number): Promise<Comment[]> {
+  async findByPostId(
+    userId: string,
+    postId: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<Comment[]> {
     return await Comment.findAll({
       where: {
         postId,
@@ -29,6 +62,33 @@ class CommentRepository {
       },
       limit,
       offset,
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT CAST(COUNT(*) AS INTEGER)
+              FROM likes AS l
+              WHERE
+                l."targetId" = "Comment"."id"
+                AND l."targetType" = 'COMMENT'
+            )`),
+            'likesCount',
+          ],
+          [
+            sequelize.literal(`(
+              SELECT EXISTS(
+                SELECT 1
+                FROM likes AS l
+                WHERE
+                  l."targetId" = "Comment"."id"
+                  AND l."targetType" = 'COMMENT'
+                  AND l."userId" = '${userId.replace(/'/g, "''")}'
+              )
+            )`),
+            'isLiked',
+          ],
+        ],
+      },
       include: [
         {
           model: User,
@@ -38,6 +98,33 @@ class CommentRepository {
         {
           model: Comment,
           as: 'replies',
+          attributes: {
+            include: [
+              [
+                sequelize.literal(`(
+                  SELECT CAST(COUNT(*) AS INTEGER)
+                  FROM likes AS l
+                  WHERE
+                    l."targetId" = "replies"."id"
+                    AND l."targetType" = 'REPLY'
+                )`),
+                'likesCount',
+              ],
+              [
+                sequelize.literal(`(
+                  SELECT EXISTS(
+                    SELECT 1
+                    FROM likes AS l
+                    WHERE
+                      l."targetId" = "replies"."id"
+                      AND l."targetType" = 'REPLY'
+                      AND l."userId" = '${userId.replace(/'/g, "''")}'
+                  )
+                )`),
+                'isLiked',
+              ],
+            ],
+          },
           include: [
             {
               model: User,

@@ -41,9 +41,12 @@ export const useToggleLike = (postId?: string) => {
           };
         });
       } else if (postId && (targetType === 'COMMENT' || targetType === 'REPLY')) {
-        queryClient.setQueryData(['comments', postId], (old: Comment[] | undefined) => {
+        queryClient.setQueriesData({ queryKey: ['comments', postId] }, (old: any) => {
           if (!old) return old;
-          return old.map((comment) => {
+          const oldArray = Array.isArray(old) ? old : (old.pages ? undefined : old);
+          if (!Array.isArray(oldArray)) return old;
+
+          return oldArray.map((comment: Comment) => {
             if (comment.id === targetId) {
               return {
                 ...comment,
@@ -54,7 +57,7 @@ export const useToggleLike = (postId?: string) => {
             if (comment.replies) {
               return {
                 ...comment,
-                replies: comment.replies.map((reply) => {
+                replies: comment.replies.map((reply: Comment) => {
                   if (reply.id === targetId) {
                     return {
                       ...reply,
@@ -93,22 +96,27 @@ export const useToggleLike = (postId?: string) => {
           };
         });
       } else if (postId) {
-        queryClient.setQueryData(['comments', postId], (old: Comment[] | undefined) => {
+        queryClient.setQueriesData({ queryKey: ['comments', postId] }, (old: any) => {
           if (!old) return old;
-          return old.map((comment) => {
+          const oldArray = Array.isArray(old) ? old : undefined;
+          if (!Array.isArray(oldArray)) return old;
+
+          return oldArray.map((comment: Comment) => {
             if (comment.id === targetId) return { ...comment, ...data };
             if (comment.replies) {
               return {
                 ...comment,
-                replies: comment.replies.map((reply) => 
+                replies: comment.replies.map((reply: Comment) => 
                   reply.id === targetId ? { ...reply, ...data } : reply
                 ),
               };
             }
-            return comment;
           });
         });
       }
+
+      // Invalidate the likers query to fetch fresh data for the ReactionModal
+      queryClient.invalidateQueries({ queryKey: ['likers', targetId, targetType] });
     },
 
     onError: (err, variables, context: { previousFeed?: InfiniteData<FeedResponse>; previousComments?: Comment[] } | undefined) => {
@@ -116,7 +124,7 @@ export const useToggleLike = (postId?: string) => {
         queryClient.setQueryData(['posts', 'feed'], context.previousFeed);
       }
       if (postId && context?.previousComments) {
-        queryClient.setQueryData(['comments', postId], context.previousComments);
+        queryClient.setQueriesData({ queryKey: ['comments', postId] }, context.previousComments);
       }
     },
     

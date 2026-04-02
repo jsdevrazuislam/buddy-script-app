@@ -8,7 +8,12 @@ export const createComment = async (userId: string, postId: string, text: string
     text,
   });
 
-  return await commentRepository.findByIdWithUser(comment.id);
+  const fetchedComment = await commentRepository.findByIdWithUser(comment.id, userId);
+  if (fetchedComment) {
+    fetchedComment.setDataValue('likesCount', 0);
+    fetchedComment.setDataValue('isLiked', false);
+  }
+  return fetchedComment;
 };
 
 export const createReply = async (userId: string, parentId: string, text: string) => {
@@ -27,9 +32,19 @@ export const createReply = async (userId: string, parentId: string, text: string
     parentId: actualParentId,
   });
 
-  return await commentRepository.findByIdWithUser(reply.id);
+  const fetchedReply = await commentRepository.findByIdWithUser(reply.id, userId);
+  if (fetchedReply) {
+    fetchedReply.setDataValue('likesCount', 0);
+    fetchedReply.setDataValue('isLiked', false);
+  }
+  return fetchedReply;
 };
 
-export const getCommentsForPost = async (postId: string, limit?: number, offset?: number) => {
-  return await commentRepository.findByPostId(postId, limit, offset);
+export const getCommentsForPost = async (
+  userId: string,
+  postId: string,
+  limit?: number,
+  offset?: number,
+) => {
+  return await commentRepository.findByPostId(userId, postId, limit, offset);
 };

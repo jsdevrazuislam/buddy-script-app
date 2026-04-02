@@ -270,6 +270,7 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
 const CommentItem: React.FC<{ comment: Comment; postId: string }> = ({ comment, postId }) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [isReactionModalOpen, setIsReactionModalOpen] = useState(false);
   const { addReply, isAddingReply } = useComments(postId);
   const { mutate: toggleLike } = useToggleLike(postId);
   const { user: currentUser } = useAuthStore();
@@ -303,28 +304,30 @@ const CommentItem: React.FC<{ comment: Comment; postId: string }> = ({ comment, 
             </div>
           </div>
           <div className="_comment_status">
-            <p className="_comment_status_text">
+            <p className="_comment_status_text" style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
               <span>{comment.text}</span>
             </p>
           </div>
-          <div className="_total_reactions">
-            <div className="_total_react">
-              <span className="_reaction_like">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 12 12">
-                  <path fill="#fff" d="M10.974 6.13H6.844V2.001a.375.375 0 00-.071-.22.378.378 0 00-.184-.131.373.373 0 00-.224-.019.38.38 0 00-.195.1l-4.13 4.128a.377.377 0 00-.044.053.375.375 0 000 .444.377.377 0 00.323.155h4.13v4.13a.375.375 0 00.071.22.378.378 0 00.184.131.373.373 0 00.224.019.38.38 0 00.195-.1l4.13-4.129a.377.377 0 00.044-.053.375.375 0 000-.444.377.377 0 00-.323-.155z" clipRule="evenodd" />
-                </svg>
-              </span>
-              <span className="_reaction_heart">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" fill="none" viewBox="0 0 13 12">
-                  <path fill="#fff" fillRule="evenodd" d="M6.5 12l-.448-.4a16.483 16.483 0 01-4.14-3.955C.7 6.155.034 4.593.034 2.73 0.034.936 1.488 0 3.298 0c1.026 0 2.012.476 2.656 1.226C6.598.476 7.584 0 8.61 0c1.81 0 3.264.936 3.264 2.73 0 1.863-.666 3.425-1.878 4.915a16.483 16.483 0 01-4.14 3.955l-.356.4z" clipRule="evenodd" />
-                </svg>
-              </span>
+          {comment.likesCount > 0 && (
+            <div className="_total_reactions" onClick={() => setIsReactionModalOpen(true)} style={{ cursor: 'pointer' }}>
+              <div className="_total_react">
+                <span className="_reaction_like">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 12 12">
+                    <path fill="#fff" d="M10.974 6.13H6.844V2.001a.375.375 0 00-.071-.22.378.378 0 00-.184-.131.373.373 0 00-.224-.019.38.38 0 00-.195.1l-4.13 4.128a.377.377 0 00-.044.053.375.375 0 000 .444.377.377 0 00.323.155h4.13v4.13a.375.375 0 00.071.22.378.378 0 00.184.131.373.373 0 00.224.019.38.38 0 00.195-.1l4.13-4.129a.377.377 0 00.044-.053.375.375 0 000-.444.377.377 0 00-.323-.155z" clipRule="evenodd" />
+                  </svg>
+                </span>
+                <span className="_reaction_heart">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" fill="none" viewBox="0 0 13 12">
+                    <path fill="#fff" fillRule="evenodd" d="M6.5 12l-.448-.4a16.483 16.483 0 01-4.14-3.955C.7 6.155.034 4.593.034 2.73 0.034.936 1.488 0 3.298 0c1.026 0 2.012.476 2.656 1.226C6.598.476 7.584 0 8.61 0c1.81 0 3.264.936 3.264 2.73 0 1.863-.666 3.425-1.878 4.915a16.483 16.483 0 01-4.14 3.955l-.356.4z" clipRule="evenodd" />
+                  </svg>
+                </span>
+              </div>
+              <span className="_total">{comment.likesCount}</span>
             </div>
-            <span className="_total">{comment.likesCount}</span>
-          </div>
+          )}
           <div className="_comment_reply">
             <div className="_comment_reply_num">
-              <ul className="_comment_reply_list">
+              <ul className="_comment_reply_list" style={{ whiteSpace: 'nowrap' }}>
                 <li onClick={handleLike} style={{ cursor: 'pointer' }}>
                   <span>{comment.isLiked ? 'Unlike.' : 'Like.'}</span>
                 </li>
@@ -370,6 +373,13 @@ const CommentItem: React.FC<{ comment: Comment; postId: string }> = ({ comment, 
           </div>
         )}
       </div>
+
+      <ReactionModal
+        isOpen={isReactionModalOpen}
+        onClose={() => setIsReactionModalOpen(false)}
+        targetId={comment.id}
+        targetType={comment.parentId ? 'REPLY' : 'COMMENT'}
+      />
     </div>
   );
 };

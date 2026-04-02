@@ -27,7 +27,7 @@ export const getPostComments = catchAsync(async (req: AuthRequest, res: Response
   const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : undefined;
   const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : undefined;
 
-  const result = await commentService.getCommentsForPost(postId, limit, offset);
+  const result = await commentService.getCommentsForPost(req.user!.id, postId, limit, offset);
   res.status(200).json({
     status: 'success',
     data: result,

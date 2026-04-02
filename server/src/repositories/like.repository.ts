@@ -26,7 +26,7 @@ class LikeRepository {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'firstName', 'lastName', 'email', 'avatar'],
+          attributes: ['id', 'firstName', 'lastName', 'email'],
         },
       ],
     });
