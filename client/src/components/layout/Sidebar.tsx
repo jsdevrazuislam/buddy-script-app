@@ -144,7 +144,15 @@ export const Sidebar: React.FC = () => {
               </div>
               <hr className="_underline" />
               <div className="_left_inner_event_bottom">
-                <p className="_left_iner_event_bottom">17 People Going</p> <Link href="#0" className="_left_iner_event_bottom_link">Going</Link>
+                <p className="_left_iner_event_bottom">17 People Going</p>
+                <button
+                  type="button"
+                  className="_left_iner_event_bottom_link"
+                  onClick={(e) => e.preventDefault()}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Going
+                </button>
               </div>
             </div>
           </Link>
@@ -164,7 +172,15 @@ export const Sidebar: React.FC = () => {
               </div>
               <hr className="_underline" />
               <div className="_left_inner_event_bottom">
-                <p className="_left_iner_event_bottom">17 People Going</p> <Link href="#0" className="_left_iner_event_bottom_link">Going</Link>
+                <p className="_left_iner_event_bottom">17 People Going</p>
+                <button
+                  type="button"
+                  className="_left_iner_event_bottom_link"
+                  onClick={(e) => e.preventDefault()}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Going
+                </button>
               </div>
             </div>
           </Link>

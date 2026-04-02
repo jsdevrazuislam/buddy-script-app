@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  /* Turbopack speeds up dev-mode HMR significantly */
+  turbopack: {},
 };
 
 export default nextConfig;

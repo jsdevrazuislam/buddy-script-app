@@ -63,9 +63,12 @@ const startServer = async () => {
     logger.info('Database Connection established successfully.');
 
     // Sync models (in production use migrations instead)
+    // alter:true re-inspects and modifies every column on every restart — very slow.
+    // Use DB_SYNC_ALTER=true env var only when you need a schema migration.
     if (process.env.NODE_ENV === 'development') {
-      logger.info('Syncing Database Models...');
-      await sequelize.sync({ alter: true });
+      const alterSchema = process.env.DB_SYNC_ALTER === 'true';
+      logger.info(`Syncing Database Models (alter=${alterSchema})...`);
+      await sequelize.sync({ alter: alterSchema });
     }
 
     // Redis connection (Optional for dev)

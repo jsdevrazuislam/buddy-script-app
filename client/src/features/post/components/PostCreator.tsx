@@ -194,7 +194,7 @@ export const PostCreator: React.FC = () => {
         </div>
       </div>
       {/* For Desktop End */}
-      
+
       {/* For Mobile */}
       <div className="_feed_inner_text_area_bottom_mobile d-md-none d-block">
         <div className="_feed_inner_text_mobile">
