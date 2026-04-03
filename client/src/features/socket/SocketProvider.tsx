@@ -147,6 +147,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     socketInstance.on('post:liked', handleLikeEvent);
     socketInstance.on('post:unliked', handleLikeEvent);
+    socketInstance.on('comment:liked', handleLikeEvent);
+    socketInstance.on('comment:unliked', handleLikeEvent);
+    socketInstance.on('reply:liked', handleLikeEvent);
+    socketInstance.on('reply:unliked', handleLikeEvent);
 
     interface CommentPayload {
       id: string;

@@ -70,13 +70,17 @@ export const toggleLike = async (
       batchEmitter.queueUpdate(postId, 'likes', countIncrement);
     }
 
+    const eventName = `${targetType.toLowerCase()}:${action}d`;
+
     // Also emit specific action (can be throttled further if millions of events)
-    socketService.emitToPost(postId, `post:${action}d`, {
+    socketService.emitToPost(postId, eventName, {
       userId,
       targetId,
       targetType,
       postId,
       totalLikes,
+      likesCount: totalLikes,
+      isLiked: action === 'like',
     });
   }
 
