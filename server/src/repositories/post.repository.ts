@@ -1,5 +1,4 @@
 import { Op, WhereOptions } from 'sequelize';
-import sequelize from '../config/database';
 import { Post, User } from '../models';
 
 class PostRepository {
@@ -24,42 +23,8 @@ class PostRepository {
       where: whereClause,
       order: [['createdAt', 'DESC']],
       limit: limit + 1,
-      attributes: {
-        include: [
-          [
-            sequelize.literal(`(
-              SELECT CAST(COUNT(*) AS INTEGER)
-              FROM likes AS l
-              WHERE
-                l."targetId" = "Post"."id"
-                AND l."targetType" = 'POST'
-            )`),
-            'likesCount',
-          ],
-          [
-            sequelize.literal(`(
-              SELECT CAST(COUNT(*) AS INTEGER)
-              FROM comments AS c
-              WHERE
-                c."postId" = "Post"."id"
-            )`),
-            'commentsCount',
-          ],
-          [
-            sequelize.literal(`(
-              SELECT EXISTS(
-                SELECT 1
-                FROM likes AS l
-                WHERE
-                  l."targetId" = "Post"."id"
-                  AND l."targetType" = 'POST'
-                  AND l."userId" = '${userId.replace(/'/g, "''")}'
-              )
-            )`),
-            'isLiked',
-          ],
-        ],
-      },
+      // Now using precomputed columns instead of subqueries
+      attributes: ['id', 'userId', 'text', 'imageUrl', 'visibility', 'likesCount', 'commentsCount', 'createdAt', 'updatedAt'],
       include: [
         {
           model: User,
@@ -71,48 +36,8 @@ class PostRepository {
   }
 
   async findById(id: string, userId?: string): Promise<Post | null> {
-    const attributes: import('sequelize').FindAttributeOptions = {
-      include: [
-        [
-          sequelize.literal(`(
-            SELECT CAST(COUNT(*) AS INTEGER)
-            FROM likes AS l
-            WHERE
-              l."targetId" = "Post"."id"
-              AND l."targetType" = 'POST'
-          )`),
-          'likesCount',
-        ],
-        [
-          sequelize.literal(`(
-            SELECT CAST(COUNT(*) AS INTEGER)
-            FROM comments AS c
-            WHERE
-              c."postId" = "Post"."id"
-          )`),
-          'commentsCount',
-        ],
-      ],
-    };
-
-    if (userId) {
-      attributes.include.push([
-        sequelize.literal(`(
-          SELECT EXISTS(
-            SELECT 1
-            FROM likes AS l
-            WHERE
-              l."targetId" = "Post"."id"
-              AND l."targetType" = 'POST'
-              AND l."userId" = '${userId.replace(/'/g, "''")}'
-          )
-        )`),
-        'isLiked',
-      ]);
-    }
-
     return await Post.findByPk(id, {
-      attributes,
+      attributes: ['id', 'userId', 'text', 'imageUrl', 'visibility', 'likesCount', 'commentsCount', 'createdAt', 'updatedAt'],
       include: [
         {
           model: User,
@@ -120,6 +45,20 @@ class PostRepository {
           attributes: ['id', 'firstName', 'lastName'],
         },
       ],
+    });
+  }
+
+  async incrementLikes(postId: string, delta: number): Promise<void> {
+    await Post.increment('likesCount', {
+      by: delta,
+      where: { id: postId },
+    });
+  }
+
+  async incrementComments(postId: string, delta: number): Promise<void> {
+    await Post.increment('commentsCount', {
+      by: delta,
+      where: { id: postId },
     });
   }
 }

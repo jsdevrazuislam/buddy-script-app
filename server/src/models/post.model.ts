@@ -9,6 +9,8 @@ class Post extends Model {
   public visibility!: 'PUBLIC' | 'PRIVATE';
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+  public likesCount!: number;
+  public commentsCount!: number;
 }
 
 Post.init(
@@ -37,6 +39,16 @@ Post.init(
     visibility: {
       type: DataTypes.ENUM('PUBLIC', 'PRIVATE'),
       defaultValue: 'PUBLIC',
+      allowNull: false,
+    },
+    likesCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    commentsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
       allowNull: false,
     },
   },

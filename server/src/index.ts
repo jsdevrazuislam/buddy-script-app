@@ -13,6 +13,9 @@ import { connectRedis } from './config/redis';
 import { logger } from './utils/logger';
 import { errorHandler } from './middlewares/error.middleware';
 import routes from './routes';
+import { reactionQueue, commentQueue } from './config/queue';
+import './workers/reaction.worker';
+import './workers/comment.worker';
 
 dotenv.config();
 
@@ -71,9 +74,18 @@ const startServer = async () => {
       await sequelize.sync({ alter: alterSchema });
     }
 
-    // Redis connection (Optional for dev)
+    // Redis connection
     try {
       await connectRedis();
+      
+      // Schedule repeatable jobs for batch processing (every 5 seconds)
+      await reactionQueue.add('process-reactions', {}, { 
+        repeat: { every: 5000 }
+      });
+      await commentQueue.add('process-comments', {}, { 
+        repeat: { every: 5000 }
+      });
+      logger.info('Batch processing jobs scheduled.');
     } catch (redisError) {
       logger.warn('Redis connection failed, continuing without cache:', redisError);
     }

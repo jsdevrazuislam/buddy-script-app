@@ -20,9 +20,7 @@ export const register = async (userData: RegisterInput) => {
   const refreshToken = generateRefreshToken({ id: user.id });
 
   // Store refresh token in Redis
-  await redisClient.set(`refresh_token:${user.id}`, refreshToken, {
-    EX: 7 * 24 * 60 * 60, // 7 days
-  });
+  await redisClient.set(`refresh_token:${user.id}`, refreshToken, 'EX', 7 * 24 * 60 * 60);
 
   return {
     user: {
@@ -46,9 +44,7 @@ export const login = async (loginData: LoginInput) => {
   const accessToken = generateAccessToken({ id: user.id });
   const refreshToken = generateRefreshToken({ id: user.id });
 
-  await redisClient.set(`refresh_token:${user.id}`, refreshToken, {
-    EX: 7 * 24 * 60 * 60,
-  });
+  await redisClient.set(`refresh_token:${user.id}`, refreshToken, 'EX', 7 * 24 * 60 * 60);
 
   return {
     user: {
@@ -79,9 +75,7 @@ export const refresh = async (refreshToken: string) => {
   const newAccessToken = generateAccessToken({ id: user.id });
   const newRefreshToken = generateRefreshToken({ id: user.id });
 
-  await redisClient.set(`refresh_token:${user.id}`, newRefreshToken, {
-    EX: 7 * 24 * 60 * 60,
-  });
+  await redisClient.set(`refresh_token:${user.id}`, newRefreshToken, 'EX', 7 * 24 * 60 * 60);
 
   return {
     accessToken: newAccessToken,

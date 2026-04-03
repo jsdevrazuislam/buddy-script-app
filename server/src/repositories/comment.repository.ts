@@ -137,6 +137,9 @@ class CommentRepository {
       order: [['createdAt', 'DESC']],
     });
   }
+  async bulkCreate(comments: any[]): Promise<void> {
+    await Comment.bulkCreate(comments);
+  }
 }
 
 export default new CommentRepository();
