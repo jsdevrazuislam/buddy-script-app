@@ -1,85 +1,223 @@
-# Buddy Script - Full Stack Social Hub
+# Buddy Script — Full-Stack Social Hub
 
-Buddy Script is a production-grade social media platform featuring a modern feed, engagement systems (likes/comments), and real-time interactions. The application is built with a separate backend and frontend architecture for maximum scalability.
+[![Backend](https://img.shields.io/badge/Backend-Live-brightgreen)](https://buddy-script-app.onrender.com)
+[![Frontend](https://img.shields.io/badge/Frontend-Live-brightgreen)](https://buddy-script-app.vercel.app)
+[![API Docs](https://img.shields.io/badge/API%20Docs-Swagger-blue)](https://buddy-script-app.onrender.com/api-docs)
+
+Buddy Script is a production-grade, real-time social media platform built with a fully decoupled backend and frontend architecture. It features a live activity feed, engagement systems (likes/comments/replies), WebSocket-based real-time updates, Redis-backed rate limiting, and Cloudinary image hosting.
+
+---
+
+## 🌐 Deployment URLs
+
+| Service | URL |
+|---|---|
+| **Frontend** | https://buddy-script-app.vercel.app |
+| **Backend API** | https://buddy-script-app.onrender.com |
+| **API Documentation** | https://buddy-script-app.onrender.com/api-docs |
+| **Health Check** | https://buddy-script-app.onrender.com/health |
 
 ---
 
 ## 📂 Project Structure
 
-- **`client/`**: [Next.js](https://nextjs.org) frontend application for a fast and responsive user experience.
-- **`server/`**: [Node.js](https://nodejs.org) backend API built with Express, Sequelize (PostgreSQL), and Redis.
-- **`old-code/`**: Legacy HTML/CSS templates providing the original design reference.
+```
+.
+├── client/          # Next.js 16 frontend (deployed on Vercel)
+├── server/          # Node.js/Express backend (deployed on Render)
+├── docker-compose.yml  # Full-stack local orchestration
+└── README.md
+```
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
-- **Node.js**: v18+
-- **Docker**: For running PostgreSQL and Redis locally.
-- **Cloudinary**: For hosting user images.
+- **Node.js** v18+
+- **Docker** (for PostgreSQL + Redis)
+- A **Cloudinary** account (free tier works)
 
-### 1. Install Dependencies
-Run the following in the root directory to install all necessary packages:
+### 1. Clone & Install
+
 ```bash
-npm install                     # Root level hooks
-cd client && npm install        # Frontend
-cd ../server && npm install     # Backend
+git clone <repo-url>
+cd buddy-script
+
+# Install all workspace dependencies
+npm install          # root hooks
+cd client && npm install
+cd ../server && npm install
 ```
 
-### 2. Environment Configuration
-Create environmental files in both subdirectories:
+### 2. Configure Environment Variables
 
-**Backend (`server/.env`)**:
-- `DB_URL`: Your PostgreSQL connection string.
-- `REDIS_URL`: Your Redis connection string.
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Your Cloudinary credentials.
+#### Backend — `server/.env`
 
-**Frontend (`client/.env.local`)**:
-- `NEXT_PUBLIC_API_URL`: Set to `http://localhost:9000/api/v1` for local development.
+Copy from the example file and fill in your values:
 
-### 3. Run Development Servers
-Start the backend and frontend in separate terminals:
-
-**Backend**:
 ```bash
-cd server
-npm run dev # Access API at http://localhost:9000
+cp server/.env.example server/.env
 ```
 
-**Frontend**:
+| Variable | Description | Example |
+|---|---|---|
+| `PORT` | Server port | `9000` |
+| `NODE_ENV` | Environment (`development` / `production`) | `development` |
+| `DB_URL` | Full PostgreSQL connection string | `postgres://user:pass@localhost:5432/buddy_db` |
+| `DB_HOST` | PostgreSQL host (if not using `DB_URL`) | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_USER` | PostgreSQL username | `postgres` |
+| `DB_PASS` | PostgreSQL password | `postgres` |
+| `DB_NAME` | Database name | `social_feed` |
+| `DB_SYNC_ALTER` | Auto-alter schema in dev (`true`/`false`) | `false` |
+| `REDIS_HOST` | Redis hostname | `localhost` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `REDIS_PASSWORD` | Redis password (blank if none) | _(empty)_ |
+| `JWT_ACCESS_SECRET` | **Secret** for signing access tokens | _(strong random string)_ |
+| `JWT_REFRESH_SECRET` | **Secret** for signing refresh tokens | _(strong random string)_ |
+| `JWT_ACCESS_EXPIRY` | Access token TTL | `15m` |
+| `JWT_REFRESH_EXPIRY` | Refresh token TTL | `7d` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | `your_cloud_name` |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | `your_api_key` |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | `your_api_secret` |
+| `CLIENT_URL` | Frontend origin (for CORS) | `http://localhost:3000` |
+
+> **⚠️ Production:** `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `DB_URL`, and `REDIS_HOST` are **required** — the server will refuse to start if they are missing.
+
+#### Frontend — `client/.env.local`
+
+| Variable | Description | Example |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:9000/api/v1` |
+| `NEXT_PUBLIC_SOCKET_URL` | WebSocket server URL | `http://localhost:9000` |
+
+### 3. Start Services (with Docker)
+
 ```bash
-cd client
-npm run dev # View App at http://localhost:3000
+# Spin up PostgreSQL + Redis in background
+docker-compose up db redis -d
+
+# Start backend dev server
+cd server && npm run dev   # http://localhost:9000
+
+# Start frontend dev server (new terminal)
+cd client && npm run dev   # http://localhost:3000
 ```
 
 ---
 
-## 🐳 Docker Deployment
+## 🐳 Full Docker Deployment
 
-The application is containerized for easy deployment. Use the root `docker-compose.yml` to orchestrate all services:
+Run the entire stack (DB + Redis + API + Frontend) in containers:
 
 ```bash
 docker-compose up --build
 ```
 
-**Services included:**
-- **PostgreSQL**: Primary database.
-- **Redis**: Caching and background job queue.
-- **API Server**: Node.js backend.
-- **Client**: Next.js optimized production build.
+| Service | Port | Description |
+|---|---|---|
+| `db` | `5432` | PostgreSQL 15 |
+| `redis` | `6379` | Redis 7 |
+| `server` | `9000` | Node.js API server |
+| `client` | `3000` | Next.js production build |
 
 ---
 
-## 🛠 Tech Stack Highlights
+## 🔧 Available Scripts
 
-- **Frontend**: Next.js 16, React 19.2, Bootstrap (for some components), Polished UI patterns.
-- **Backend API**: Typescript, Express, Sequelize ORM.
-- **Performance**: Cursor-based pagination for feeds, Redis caching for tokens and frequent data.
-- **Storage**: Direct-to-Cloudinary image uploads using signed URLs for security.
-- **Documentation**: Fully documented REST API via **Swagger/OpenAPI** (`/api-docs`).
+### Backend (`server/`)
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server with hot-reload (nodemon) |
+| `npm run build` | Compile TypeScript → `dist/` |
+| `npm run start` | Run compiled production build |
+| `npm run lint` | ESLint check |
+| `npm run lint:fix` | ESLint auto-fix |
+| `npm run format` | Prettier formatting |
+| `npm run type-check` | TypeScript type-check (no emit) |
+
+### Frontend (`client/`)
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Next.js dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint check |
+
+---
+
+## 📖 API Documentation
+
+Interactive Swagger/OpenAPI docs are available when the server is running:
+
+- **Local**: http://localhost:9000/api-docs
+- **Production**: https://buddy-script-app.onrender.com/api-docs
+
+### Endpoints Summary
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/register` | ❌ | Register new user |
+| `POST` | `/api/v1/auth/login` | ❌ | Login, get tokens |
+| `POST` | `/api/v1/auth/refresh` | ❌ | Refresh access token |
+| `POST` | `/api/v1/auth/logout` | ❌ | Revoke refresh token |
+| `GET` | `/api/v1/posts` | ✅ | Get paginated feed |
+| `POST` | `/api/v1/posts` | ✅ | Create a post |
+| `GET` | `/api/v1/posts/:id` | ✅ | Get post by ID |
+| `GET` | `/api/v1/posts/upload-url` | ✅ | Get Cloudinary signed upload URL |
+| `POST` | `/api/v1/likes/toggle` | ✅ | Toggle like on post/comment |
+| `GET` | `/api/v1/likes` | ✅ | Get likers |
+| `POST` | `/api/v1/comments` | ✅ | Create comment |
+| `POST` | `/api/v1/comments/:id/replies` | ✅ | Reply to comment |
+| `GET` | `/api/v1/comments/post/:postId` | ✅ | Get post comments |
+
+---
+
+## 🛡️ Security Architecture
+
+| Feature | Implementation |
+|---|---|
+| **Rate Limiting** | Redis-backed `rate-limiter-flexible` — per IP + User ID |
+| Auth routes | 10 requests / 15 min → 30 min block |
+| Post creation | 20 posts / hour → 1 hour block |
+| Likes / Comments | 100 requests / min → 5 min block |
+| **Helmet.js** | Strict CSP, hides `X-Powered-By`, sets security headers |
+| **CORS** | Whitelist-only: `https://buddy-script-app.vercel.app` in production |
+| **XSS Protection** | `xss-clean` strips malicious HTML from all request inputs |
+| **HPP** | `hpp` prevents HTTP parameter pollution attacks |
+| **Body Size Limit** | `express.json({ limit: '10kb' })` prevents JSON bomb attacks |
+| **Image Upload** | 5 MB max enforced via Cloudinary signed params + Content-Length header |
+| **JWT** | Short-lived access tokens (15m) + refresh tokens in Redis; secrets validated at startup |
+| **SQL Injection** | Sequelize parameterized queries (no raw string interpolation) |
+| **Stack Traces** | Hidden in production — error handler strips stack from API responses |
+| **WebSocket Auth** | JWT verified on every Socket.IO connection |
+
+---
+
+## ⚡ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Runtime** | Node.js 18+, TypeScript |
+| **Framework** | Express 5 |
+| **Database** | PostgreSQL 15 via Sequelize ORM |
+| **Cache / Queue** | Redis 7 via ioredis + BullMQ |
+| **Real-Time** | Socket.IO 4 with Redis adapter (horizontal scale) |
+| **Auth** | JWT (access + refresh token rotation) |
+| **Image Uploads** | Cloudinary (signed URL — direct browser upload) |
+| **Validation** | Zod schemas |
+| **Logging** | Winston (structured logs to file + console) |
+| **HTTP Security** | Helmet, cors, xss-clean, hpp, rate-limiter-flexible |
+| **API Docs** | Swagger / OpenAPI 3.0 |
+| **Frontend** | Next.js 16, React 19, TanStack Query |
+| **Deployment** | Render (backend), Vercel (frontend) |
 
 ---
 
 ## 🛡 License
+
 This project is licensed under the ISC License.
+

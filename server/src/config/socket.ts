@@ -15,9 +15,14 @@ let io: Server;
 export const initSocket = (app: Express) => {
   const httpServer = createServer(app);
 
+  const allowedOrigins =
+    process.env.NODE_ENV === 'production'
+      ? ['https://buddy-script-app.vercel.app']
+      : [process.env.CLIENT_URL || 'http://localhost:3000'];
+
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      origin: allowedOrigins,
       methods: ['GET', 'POST'],
       credentials: true,
     },

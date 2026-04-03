@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { protect } from '../../middlewares/auth.middleware';
+import { applyGeneralLimiter } from '../../middlewares/rateLimiter.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 
 import * as commentController from './comment.controller';
@@ -10,8 +11,19 @@ const router = Router();
 
 router.use(protect);
 
-router.post('/', validate(createCommentSchema), commentController.createComment);
-router.post('/:id/replies', validate(createReplySchema), commentController.createReply);
+// General rate limit on write operations — 100 requests per minute per user
+router.post(
+  '/',
+  applyGeneralLimiter,
+  validate(createCommentSchema),
+  commentController.createComment,
+);
+router.post(
+  '/:id/replies',
+  applyGeneralLimiter,
+  validate(createReplySchema),
+  commentController.createReply,
+);
 router.get('/post/:postId', commentController.getPostComments);
 
 export default router;

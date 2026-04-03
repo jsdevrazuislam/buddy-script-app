@@ -124,7 +124,7 @@ export const PostCreator: React.FC = () => {
       </div>
 
       {imagePreview && (
-        <div className="mt-3 mb-3 position-relative">
+        <div className="mt-3 mb-3 position-relative" style={{ width: 200, height: 200 }}>
           <Image
             src={imagePreview}
             alt="Preview"
