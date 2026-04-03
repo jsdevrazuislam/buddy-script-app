@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { authApi } from '../services/authApi';
+import { useRouter } from 'next/navigation';
+
 import { useAuthStore } from '@/store/useAuthStore';
 import { AuthResponse, LoginPayload, RegisterPayload } from '@/types';
+
+import { authApi } from '../services/authApi';
 
 export const useAuth = () => {
   const router = useRouter();

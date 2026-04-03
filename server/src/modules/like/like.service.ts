@@ -1,5 +1,5 @@
-import likeRepository from '../../repositories/like.repository';
 import redis from '../../config/redis';
+import likeRepository from '../../repositories/like.repository';
 
 const CACHE_TTL = 3600; // 1 hour
 
@@ -9,19 +9,19 @@ export const toggleLike = async (
   targetType: 'POST' | 'COMMENT' | 'REPLY',
 ) => {
   const key = `likes:${targetType}:${targetId}`;
-  
+
   // 1. Check if user already liked
   let isLiked = await redis.sismember(key, userId);
-  
+
   // 2. Populate cache if miss
   const exists = await redis.exists(key);
   if (!exists) {
     const existingLikers = await likeRepository.findUsersByTarget(targetId, targetType);
-    const userIds = existingLikers.map(u => u.id);
+    const userIds = existingLikers.map((u) => u.id);
     if (userIds.length > 0) {
       await redis.sadd(key, ...userIds);
     } else {
-      await redis.sadd(key, 'INIT_MARKER'); 
+      await redis.sadd(key, 'INIT_MARKER');
     }
     await redis.expire(key, CACHE_TTL);
     isLiked = await redis.sismember(key, userId);
@@ -39,13 +39,16 @@ export const toggleLike = async (
   }
 
   // 4. Buffer for Batch Processing
-  await redis.rpush('buffer:reactions', JSON.stringify({
-    userId,
-    targetId,
-    targetType,
-    action,
-    timestamp: Date.now(),
-  }));
+  await redis.rpush(
+    'buffer:reactions',
+    JSON.stringify({
+      userId,
+      targetId,
+      targetType,
+      action,
+      timestamp: Date.now(),
+    }),
+  );
 
   // Ensure the worker knows there is work (optional if using repeatable job)
   // await reactionQueue.add('process-reactions', {}, { jobId: 'reaction-batcher', repeat: { every: 5000 } });
@@ -56,15 +59,15 @@ export const toggleLike = async (
 export const getLikers = async (targetId: string, targetType: string) => {
   const key = `likes:${targetType}:${targetId}`;
   const userIds = await redis.smembers(key);
-  
+
   if (userIds.length > 0) {
-    const filteredIds = userIds.filter(id => id !== 'INIT_MARKER');
+    const filteredIds = userIds.filter((id) => id !== 'INIT_MARKER');
     return await likeRepository.findUsersByIds(filteredIds);
   }
 
   const likers = await likeRepository.findUsersByTarget(targetId, targetType);
   if (likers.length > 0) {
-    await redis.sadd(key, ...likers.map(u => u.id));
+    await redis.sadd(key, ...likers.map((u) => u.id));
     await redis.expire(key, CACHE_TTL);
   }
   return likers;
@@ -73,7 +76,7 @@ export const getLikers = async (targetId: string, targetType: string) => {
 export const getLikesCount = async (targetId: string, targetType: string) => {
   const countKey = `count:likes:${targetType}:${targetId}`;
   const cachedCount = await redis.get(countKey);
-  
+
   if (cachedCount !== null) {
     return parseInt(cachedCount);
   }

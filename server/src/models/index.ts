@@ -1,7 +1,7 @@
-import User from './user.model';
-import Post from './post.model';
 import Comment from './comment.model';
 import Like from './like.model';
+import Post from './post.model';
+import User from './user.model';
 
 // User and Post
 User.hasMany(Post, { foreignKey: 'userId', as: 'posts' });

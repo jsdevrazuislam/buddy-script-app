@@ -4,7 +4,7 @@ import { ApiResponse, Comment } from '@/types';
 export const commentApi = {
   getPostComments: async (postId: string, limit?: number, offset?: number): Promise<Comment[]> => {
     const response = await apiClient.get<ApiResponse<Comment[]>>(`/comments/post/${postId}`, {
-      params: { limit, offset }
+      params: { limit, offset },
     });
     return response.data.data;
   },

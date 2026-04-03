@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+
 import { User } from '@/types';
 
 interface AuthState {
@@ -19,13 +20,13 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
       clearAuth: () => set({ user: null, token: null, isAuthenticated: false }),
-      updateUser: (updatedUser) => 
+      updateUser: (updatedUser) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...updatedUser } : null,
         })),
     }),
     {
       name: 'auth-storage',
-    }
-  )
+    },
+  ),
 );

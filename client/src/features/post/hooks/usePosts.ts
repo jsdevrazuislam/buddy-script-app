@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+
+import { FeedResponse, CreatePostPayload } from '@/types';
+
 import { postApi } from '../services/postApi';
-import { Post, FeedResponse, CreatePostPayload } from '@/types';
 
 export const usePosts = () => {
   const queryClient = useQueryClient();
@@ -19,7 +21,8 @@ export const usePosts = () => {
     queryKey: ['posts', 'feed'],
     queryFn: ({ pageParam }: { pageParam?: string }) => postApi.getFeed(pageParam),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage: FeedResponse) => lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.endCursor : undefined,
+    getNextPageParam: (lastPage: FeedResponse) =>
+      lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.endCursor : undefined,
   });
 
   const posts = data?.pages.flatMap((page: FeedResponse) => page.posts) ?? [];
@@ -34,7 +37,7 @@ export const usePosts = () => {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['posts', 'feed'] });
       const previousPosts = queryClient.getQueryData(['posts', 'feed']);
-      
+
       return { previousPosts };
     },
   });

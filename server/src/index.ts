@@ -1,19 +1,19 @@
-import express, { Express, Request, Response } from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
-import swaggerOptions from './config/swagger';
+import swaggerUi from 'swagger-ui-express';
 
 import sequelize from './config/database';
-import './models'; // Initialize associations
+import { reactionQueue, commentQueue } from './config/queue';
 import { connectRedis } from './config/redis';
-import { logger } from './utils/logger';
+import swaggerOptions from './config/swagger';
+import './models'; // Initialize associations
 import { errorHandler } from './middlewares/error.middleware';
 import routes from './routes';
-import { reactionQueue, commentQueue } from './config/queue';
+import { logger } from './utils/logger';
 import './workers/reaction.worker';
 import './workers/comment.worker';
 
@@ -44,7 +44,7 @@ app.use(
 );
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
@@ -77,14 +77,22 @@ const startServer = async () => {
     // Redis connection
     try {
       await connectRedis();
-      
+
       // Schedule repeatable jobs for batch processing (every 5 seconds)
-      await reactionQueue.add('process-reactions', {}, { 
-        repeat: { every: 5000 }
-      });
-      await commentQueue.add('process-comments', {}, { 
-        repeat: { every: 5000 }
-      });
+      await reactionQueue.add(
+        'process-reactions',
+        {},
+        {
+          repeat: { every: 5000 },
+        },
+      );
+      await commentQueue.add(
+        'process-comments',
+        {},
+        {
+          repeat: { every: 5000 },
+        },
+      );
       logger.info('Batch processing jobs scheduled.');
     } catch (redisError) {
       logger.warn('Redis connection failed, continuing without cache:', redisError);

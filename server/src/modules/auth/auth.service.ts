@@ -1,8 +1,10 @@
+import { z } from 'zod';
+
+import redisClient from '../../config/redis';
 import userRepository from '../../repositories/user.repository';
 import { ConflictError, UnauthorizedError } from '../../utils/errors';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../utils/token';
-import redisClient from '../../config/redis';
-import { z } from 'zod';
+
 import { registerSchema, loginSchema } from './auth.validation';
 
 type RegisterInput = z.infer<typeof registerSchema>['body'];

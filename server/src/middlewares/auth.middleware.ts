@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../utils/token';
-import { UnauthorizedError } from '../utils/errors';
+
 import User from '../models/user.model';
+import { UnauthorizedError } from '../utils/errors';
+import { verifyAccessToken } from '../utils/token';
 
 export interface AuthRequest extends Request {
   user?: User;
 }
 
-export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = async (req: AuthRequest, _res: Response, next: NextFunction) => {
   try {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {

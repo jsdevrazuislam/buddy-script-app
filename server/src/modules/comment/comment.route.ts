@@ -1,7 +1,9 @@
 import { Router } from 'express';
-import * as commentController from './comment.controller';
-import { validate } from '../../middlewares/validate.middleware';
+
 import { protect } from '../../middlewares/auth.middleware';
+import { validate } from '../../middlewares/validate.middleware';
+
+import * as commentController from './comment.controller';
 import { createCommentSchema, createReplySchema } from './comment.validation';
 
 const router = Router();

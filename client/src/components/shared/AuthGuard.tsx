@@ -1,8 +1,9 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { useRouter, usePathname } from 'next/navigation';
+import { ReactNode, useEffect, useState } from 'react';
+
 import { useAuthStore } from '@/store/useAuthStore';
 
 interface AuthGuardProps {

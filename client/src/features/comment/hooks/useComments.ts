@@ -1,13 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { commentApi } from '../services/commentApi';
-import { Comment } from '@/types';
 import { useState, useMemo } from 'react';
+
+import { commentApi } from '../services/commentApi';
 
 export const useComments = (postId: string) => {
   const queryClient = useQueryClient();
   const [limit, setLimit] = useState(5);
 
-  const { data: commentsResponse = [], isLoading, error } = useQuery({
+  const {
+    data: commentsResponse = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['comments', postId, limit],
     queryFn: () => commentApi.getPostComments(postId, limit, 0),
     enabled: !!postId,
@@ -26,7 +30,7 @@ export const useComments = (postId: string) => {
   });
 
   const addReplyMutation = useMutation({
-    mutationFn: ({ commentId, text }: { commentId: string; text: string }) => 
+    mutationFn: ({ commentId, text }: { commentId: string; text: string }) =>
       commentApi.addReply(commentId, text),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', postId] });

@@ -1,25 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+
 import { Header } from '@/components/layout/Header';
+import { MobileNav } from '@/components/layout/MobileNav';
+import { RightSidebar } from '@/components/layout/RightSidebar';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { PostCreator } from '@/features/post/components/PostCreator';
+import { SwitchingBtn } from '@/components/layout/SwitchingBtn';
 import { PostCard } from '@/features/post/components/PostCard';
+import { PostCreator } from '@/features/post/components/PostCreator';
 import { Stories } from '@/features/post/components/Stories';
 import { usePosts } from '@/features/post/hooks/usePosts';
-import { MobileNav } from '@/components/layout/MobileNav';
-import { SwitchingBtn } from '@/components/layout/SwitchingBtn';
-import { RightSidebar } from '@/components/layout/RightSidebar';
 
 export default function FeedPage() {
-  const { 
-    posts, 
-    isLoading, 
-    error, 
-    hasNextPage, 
-    fetchNextPage, 
-    isFetchingNextPage 
-  } = usePosts();
+  const { posts, isLoading, error } = usePosts();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const toggleTheme = () => {
@@ -35,7 +29,7 @@ export default function FeedPage() {
 
         {/* Main Layout Structure Start */}
         <div className="container _custom_container">
-          <div className='_layout_inner_wrap'>
+          <div className="_layout_inner_wrap">
             <div className="row">
               {/* Left Sidebar */}
               <div className="col-xl-3 col-lg-3 col-md-12 col-sm-12 _custom_mobile_none">

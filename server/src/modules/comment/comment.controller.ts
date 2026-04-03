@@ -1,6 +1,8 @@
 import { Response } from 'express';
-import { catchAsync } from '../../utils/catchAsync';
+
 import { AuthRequest } from '../../middlewares/auth.middleware';
+import { catchAsync } from '../../utils/catchAsync';
+
 import * as commentService from './comment.service';
 
 export const createComment = catchAsync(async (req: AuthRequest, res: Response) => {

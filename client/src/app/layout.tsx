@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
+
 import Providers from './providers';
 
 // Importing custom CSS from src/assets/css
@@ -20,14 +21,10 @@ export const metadata: Metadata = {
   description: 'Connect with friends and share your life.',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={poppins.variable}>
-      <body className="antialiased">
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

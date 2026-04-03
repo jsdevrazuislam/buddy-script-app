@@ -1,4 +1,5 @@
 import { Worker, Job } from 'bullmq';
+
 import redis from '../config/redis';
 import commentRepository from '../repositories/comment.repository';
 import postRepository from '../repositories/post.repository';
@@ -12,18 +13,18 @@ export const commentWorker = new Worker(
   async (job: Job) => {
     if (job.name === 'process-comments') {
       logger.info('Processing comment batch...');
-      
+
       const items = await redis.lrange(COMMENT_BUFFER_KEY, 0, BATCH_SIZE - 1);
-      
+
       if (items.length === 0) return;
 
       await redis.ltrim(COMMENT_BUFFER_KEY, items.length, -1);
 
       const comments = items.map((item) => JSON.parse(item));
-      
+
       // 1. Bulk DB Insert
       try {
-        const commentsToCreate = comments.map(c => ({
+        const commentsToCreate = comments.map((c) => ({
           id: c.id,
           userId: c.userId,
           postId: c.postId,
@@ -34,7 +35,7 @@ export const commentWorker = new Worker(
         await commentRepository.bulkCreate(commentsToCreate);
 
         // 2. Clear pending cache for these posts (since they are now in DB)
-        const postIds = new Set(comments.map(c => c.postId));
+        const postIds = new Set(comments.map((c) => c.postId));
         for (const postId of postIds) {
           await redis.del(`pending:comments:${postId}`);
         }

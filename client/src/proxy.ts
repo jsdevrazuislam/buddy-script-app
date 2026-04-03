@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
   const token = request.cookies.get('access_token')?.value;
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
+  const isAuthPage =
+    request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/register');
 
   if (!token && !isAuthPage && request.nextUrl.pathname !== '/') {

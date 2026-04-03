@@ -1,0 +1,2 @@
+npm --prefix client run lint && npm --prefix client run type-check && npm --prefix client run build
+npm --prefix server run lint && npm --prefix server run type-check && npm --prefix server run build

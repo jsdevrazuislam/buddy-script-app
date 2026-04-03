@@ -1,5 +1,6 @@
-import { AuthGuard } from '@/components/shared/AuthGuard';
 import type { Metadata } from 'next';
+
+import { AuthGuard } from '@/components/shared/AuthGuard';
 
 export const metadata: Metadata = {
   title: 'Social Feed',

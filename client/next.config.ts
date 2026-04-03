@@ -1,8 +1,19 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
-  /* Turbopack speeds up dev-mode HMR significantly */
-  turbopack: {},
+  turbopack: {
+    root: path.join(__dirname, '..'),
+  },
+  reactCompiler: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

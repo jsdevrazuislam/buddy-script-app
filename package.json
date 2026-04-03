@@ -1,0 +1,39 @@
+{
+  "name": "test-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsdevrazuislam/buddy-script-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jsdevrazuislam/buddy-script-app/issues"
+  },
+  "homepage": "https://github.com/jsdevrazuislam/buddy-script-app#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
+    "@commitlint/types": "^19.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
+  },
+  "lint-staged": {
+    "client/**/*.{js,jsx,ts,tsx}": [
+      "npm --prefix client run lint:fix",
+      "npm --prefix client run format"
+    ],
+    "server/**/*.ts": [
+      "npm --prefix server run lint:fix",
+      "npm --prefix server run format"
+    ]
+  }
+}

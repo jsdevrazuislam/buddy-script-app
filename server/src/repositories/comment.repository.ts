@@ -1,5 +1,5 @@
-import { Comment, User } from '../models';
 import sequelize from '../config/database';
+import { Comment, User } from '../models';
 
 class CommentRepository {
   async create(commentData: Parameters<typeof Comment.create>[0]): Promise<Comment> {
@@ -137,7 +137,7 @@ class CommentRepository {
       order: [['createdAt', 'DESC']],
     });
   }
-  async bulkCreate(comments: any[]): Promise<void> {
+  async bulkCreate(comments: Parameters<typeof Comment.bulkCreate>[0]): Promise<void> {
     await Comment.bulkCreate(comments);
   }
 }

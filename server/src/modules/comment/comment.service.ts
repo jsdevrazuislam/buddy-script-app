@@ -1,12 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import commentRepository from '../../repositories/comment.repository';
+
 import redis from '../../config/redis';
-import { NotFoundError } from '../../utils/errors';
 import { User } from '../../models';
+import commentRepository from '../../repositories/comment.repository';
+import { NotFoundError } from '../../utils/errors';
 
 export const createComment = async (userId: string, postId: string, text: string) => {
   const commentId = uuidv4();
-  
+
   // 1. Prepare job data for worker
   const jobData = {
     id: commentId,
@@ -20,7 +21,7 @@ export const createComment = async (userId: string, postId: string, text: string
 
   // 2. Fetch user for optimistic return and cache
   const user = await User.findByPk(userId, { attributes: ['id', 'firstName', 'lastName'] });
-  
+
   const optimisticComment = {
     id: commentId,
     userId,
@@ -41,9 +42,9 @@ export const createComment = async (userId: string, postId: string, text: string
     redis.rpush('buffer:comments', JSON.stringify(jobData)),
     redis.rpush(pendingKey, JSON.stringify(optimisticComment)),
     redis.expire(pendingKey, 60), // Short TTL safety
-    redis.incr(`count:comments:POST:${postId}`)
+    redis.incr(`count:comments:POST:${postId}`),
   ]);
-  
+
   return optimisticComment;
 };
 
@@ -91,7 +92,7 @@ export const createReply = async (userId: string, parentId: string, text: string
     redis.rpush('buffer:comments', JSON.stringify(jobData)),
     redis.rpush(pendingKey, JSON.stringify(optimisticReply)),
     redis.expire(pendingKey, 60),
-    redis.incr(`count:comments:POST:${parentComment.postId}`)
+    redis.incr(`count:comments:POST:${parentComment.postId}`),
   ]);
 
   return optimisticReply;
@@ -109,29 +110,28 @@ export const getCommentsForPost = async (
   // 2. Fetch pending comments from Redis
   const pendingKey = `pending:comments:${postId}`;
   const pendingRaw = await redis.lrange(pendingKey, 0, -1);
-  const pendingComments = pendingRaw.map(raw => JSON.parse(raw));
-
+  const pendingComments = pendingRaw.map((raw) => JSON.parse(raw));
   if (pendingComments.length === 0) {
     return dbComments;
   }
 
   // 3. Merge and Deduplicate (DB version wins)
-  const dbCommentIds = new Set(dbComments.map(c => c.id));
-  const filteredPending = pendingComments.filter(pc => !dbCommentIds.has(pc.id));
+  const dbCommentIds = new Set(dbComments.map((c) => c.id));
+  const filteredPending = pendingComments.filter((pc: { id: string }) => !dbCommentIds.has(pc.id));
 
   // Merge top-level comments and replies appropriately
-  // For simplicity, we treat pending comments normally. If a pending comment is a reply, 
+  // For simplicity, we treat pending comments normally. If a pending comment is a reply,
   // it might need to be nested if it's not already.
-  const merged = [...filteredPending.filter(c => !c.parentId), ...dbComments];
+  const merged = [...filteredPending.filter((c) => !c.parentId), ...dbComments];
 
   // Handle pending replies (attach to their parents)
-  const pendingReplies = filteredPending.filter(c => c.parentId);
+  const pendingReplies = filteredPending.filter((c) => c.parentId);
   for (const reply of pendingReplies) {
-    const parent = merged.find(c => c.id === reply.parentId);
+    const parent = merged.find((c) => c.id === reply.parentId);
     if (parent) {
       if (!parent.replies) parent.replies = [];
       // Deduplicate reply as well
-      if (!parent.replies.some((r: any) => r.id === reply.id)) {
+      if (!parent.replies.some((r: { id: string }) => r.id === reply.id)) {
         parent.replies.unshift(reply);
       }
     }

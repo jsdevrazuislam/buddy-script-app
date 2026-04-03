@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+
 import { catchAsync } from '../../utils/catchAsync';
+
 import * as authService from './auth.service';
 
 export const register = catchAsync(async (req: Request, res: Response) => {

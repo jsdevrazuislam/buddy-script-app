@@ -1,4 +1,5 @@
 import { Worker, Job } from 'bullmq';
+
 import redis from '../config/redis';
 import likeRepository from '../repositories/like.repository';
 import postRepository from '../repositories/post.repository';
@@ -12,19 +13,26 @@ export const reactionWorker = new Worker(
   async (job: Job) => {
     if (job.name === 'process-reactions') {
       logger.info('Processing reaction batch...');
-      
+
       const items = await redis.lrange(REACTION_BUFFER_KEY, 0, BATCH_SIZE - 1);
-      
+
       if (items.length === 0) return;
 
       // Remove items from buffer
       await redis.ltrim(REACTION_BUFFER_KEY, items.length, -1);
 
-      const reactions = items.map((item) => JSON.parse(item));
-      
+      interface ReactionItem {
+        userId: string;
+        targetId: string;
+        targetType: 'POST' | 'COMMENT' | 'REPLY';
+        action: 'like' | 'unlike';
+      }
+
+      const reactions: ReactionItem[] = items.map((item) => JSON.parse(item));
+
       // 2. Aggregate operations
-      const likesToCreate: any[] = [];
-      const likesToDelete: any[] = [];
+      const likesToCreate: { userId: string; targetId: string; targetType: string }[] = [];
+      const likesToDelete: { userId: string; targetId: string; targetType: string }[] = [];
       const postCountUpdates: Record<string, number> = {};
 
       for (const req of reactions) {

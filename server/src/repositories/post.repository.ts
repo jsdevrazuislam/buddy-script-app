@@ -1,4 +1,5 @@
 import { Op, WhereOptions } from 'sequelize';
+
 import { Post, User } from '../models';
 
 class PostRepository {
@@ -24,7 +25,17 @@ class PostRepository {
       order: [['createdAt', 'DESC']],
       limit: limit + 1,
       // Now using precomputed columns instead of subqueries
-      attributes: ['id', 'userId', 'text', 'imageUrl', 'visibility', 'likesCount', 'commentsCount', 'createdAt', 'updatedAt'],
+      attributes: [
+        'id',
+        'userId',
+        'text',
+        'imageUrl',
+        'visibility',
+        'likesCount',
+        'commentsCount',
+        'createdAt',
+        'updatedAt',
+      ],
       include: [
         {
           model: User,
@@ -35,9 +46,19 @@ class PostRepository {
     });
   }
 
-  async findById(id: string, userId?: string): Promise<Post | null> {
+  async findById(id: string, _userId?: string): Promise<Post | null> {
     return await Post.findByPk(id, {
-      attributes: ['id', 'userId', 'text', 'imageUrl', 'visibility', 'likesCount', 'commentsCount', 'createdAt', 'updatedAt'],
+      attributes: [
+        'id',
+        'userId',
+        'text',
+        'imageUrl',
+        'visibility',
+        'likesCount',
+        'commentsCount',
+        'createdAt',
+        'updatedAt',
+      ],
       include: [
         {
           model: User,

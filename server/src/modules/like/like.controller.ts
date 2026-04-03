@@ -1,6 +1,8 @@
 import { Response } from 'express';
-import { catchAsync } from '../../utils/catchAsync';
+
 import { AuthRequest } from '../../middlewares/auth.middleware';
+import { catchAsync } from '../../utils/catchAsync';
+
 import * as likeService from './like.service';
 
 export const toggleLike = catchAsync(async (req: AuthRequest, res: Response) => {

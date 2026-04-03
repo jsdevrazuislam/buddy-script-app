@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+
 import { Like, User } from '../models';
 
 class LikeRepository {
@@ -50,11 +51,15 @@ class LikeRepository {
     });
   }
 
-  async bulkCreate(likes: { userId: string; targetId: string; targetType: string }[]): Promise<void> {
+  async bulkCreate(
+    likes: { userId: string; targetId: string; targetType: string }[],
+  ): Promise<void> {
     await Like.bulkCreate(likes, { ignoreDuplicates: true });
   }
 
-  async bulkDestroy(likes: { userId: string; targetId: string; targetType: string }[]): Promise<void> {
+  async bulkDestroy(
+    likes: { userId: string; targetId: string; targetType: string }[],
+  ): Promise<void> {
     await Like.destroy({
       where: {
         [Op.or]: likes.map((l) => ({

@@ -1,7 +1,9 @@
 import { Router } from 'express';
-import * as likeController from './like.controller';
-import { validate } from '../../middlewares/validate.middleware';
+
 import { protect } from '../../middlewares/auth.middleware';
+import { validate } from '../../middlewares/validate.middleware';
+
+import * as likeController from './like.controller';
 import { toggleLikeSchema } from './like.validation';
 
 const router = Router();
