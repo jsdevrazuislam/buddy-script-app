@@ -398,9 +398,11 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
 
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    addComment(text);
-    setText('');
+    const trimmedText = text.trim();
+    if (!trimmedText) return;
+    addComment(trimmedText, {
+      onSuccess: () => setText(''),
+    });
   };
 
   return (
@@ -482,10 +484,17 @@ const CommentItem: React.FC<{ comment: PostComment; postId: string }> = ({ comme
 
   const handleAddReply = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyText.trim()) return;
-    addReply({ commentId: comment.id, text: replyText });
-    setReplyText('');
-    setShowReplyBox(false);
+    const trimmedText = replyText.trim();
+    if (!trimmedText) return;
+    addReply(
+      { commentId: comment.id, text: trimmedText },
+      {
+        onSuccess: () => {
+          setReplyText('');
+          setShowReplyBox(false);
+        },
+      },
+    );
   };
 
   const handleLike = () => {
@@ -514,14 +523,15 @@ const CommentItem: React.FC<{ comment: PostComment; postId: string }> = ({ comme
               </Link>
             </div>
           </div>
-          <div className="_comment_status">
-            <p
-              className="_comment_status_text"
-              style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
-            >
-              <span>{comment.text}</span>
-            </p>
-          </div>
+          <p
+            className="_comment_status_text"
+            style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
+          >
+            <span>{comment.text}</span>
+            {comment.isOptimistic && (
+              <span className="ml-2 text-xs text-gray-400 italic">Sending...</span>
+            )}
+          </p>
           {comment.likesCount > 0 && (
             <div
               className="_total_reactions"

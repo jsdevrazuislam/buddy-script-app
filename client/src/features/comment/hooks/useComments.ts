@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
 
+import { useAuthStore } from '@/store/useAuthStore';
+import { PostComment } from '@/types';
+
 import { commentApi } from '../services/commentApi';
 
 export const useComments = (postId: string) => {
@@ -22,9 +25,42 @@ export const useComments = (postId: string) => {
     return [...commentsResponse].reverse();
   }, [commentsResponse]);
 
+  const { user: currentUser } = useAuthStore();
+
   const addCommentMutation = useMutation({
     mutationFn: (text: string) => commentApi.addComment(postId, text),
-    onSuccess: () => {
+    onMutate: async (text: string) => {
+      await queryClient.cancelQueries({ queryKey: ['comments', postId] });
+      const previousComments = queryClient.getQueryData<PostComment[]>(['comments', postId, limit]);
+
+      if (previousComments && currentUser) {
+        const optimisticComment: PostComment & { isOptimistic?: boolean } = {
+          id: `temp-${Date.now()}`,
+          userId: currentUser.id,
+          postId,
+          text,
+          parentId: null,
+          likesCount: 0,
+          isLiked: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          user: currentUser,
+          isOptimistic: true,
+        };
+
+        queryClient.setQueryData<PostComment[]>(['comments', postId, limit], (old) => {
+          return [optimisticComment, ...(old || [])];
+        });
+      }
+
+      return { previousComments };
+    },
+    onError: (_err, _text, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(['comments', postId, limit], context.previousComments);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', postId] });
     },
   });
@@ -32,7 +68,46 @@ export const useComments = (postId: string) => {
   const addReplyMutation = useMutation({
     mutationFn: ({ commentId, text }: { commentId: string; text: string }) =>
       commentApi.addReply(commentId, text),
-    onSuccess: () => {
+    onMutate: async ({ commentId, text }) => {
+      await queryClient.cancelQueries({ queryKey: ['comments', postId] });
+      const previousComments = queryClient.getQueryData<PostComment[]>(['comments', postId, limit]);
+
+      if (previousComments && currentUser) {
+        const optimisticReply: PostComment & { isOptimistic?: boolean } = {
+          id: `temp-${Date.now()}`,
+          userId: currentUser.id,
+          postId,
+          text,
+          parentId: commentId,
+          likesCount: 0,
+          isLiked: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          user: currentUser,
+          isOptimistic: true,
+        };
+
+        queryClient.setQueryData<PostComment[]>(['comments', postId, limit], (old) => {
+          return (old || []).map((comment) => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                replies: [...(comment.replies || []), optimisticReply],
+              };
+            }
+            return comment;
+          });
+        });
+      }
+
+      return { previousComments };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(['comments', postId, limit], context.previousComments);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', postId] });
     },
   });

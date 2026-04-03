@@ -1,9 +1,11 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import Cookies from 'js-cookie';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+
+import { useAuthStore } from '@/store/useAuthStore';
+import { User, PostComment } from '@/types';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -21,13 +23,12 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const queryClient = useQueryClient();
+  const { token } = useAuthStore();
 
   useEffect(() => {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL
       ? new URL(process.env.NEXT_PUBLIC_API_URL).origin
       : 'http://localhost:9000';
-
-    const token = Cookies.get('access_token');
 
     if (!token) {
       setTimeout(() => {
@@ -125,7 +126,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
             if (!oldData) return oldData;
             const existing = Array.isArray(oldData) ? oldData : [];
             return existing.map((comment: unknown) => {
-              const c = comment as { id: string; likesCount: number; replies?: unknown[] };
+              const c = comment as {
+                id: string;
+                likesCount: number;
+                user: User;
+                replies?: PostComment[];
+                isOptimistic?: boolean;
+              };
               if (c.id === targetId) {
                 return { ...c, likesCount: totalLikes };
               }
@@ -198,7 +205,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [queryClient]);
+  }, [queryClient, token]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>{children}</SocketContext.Provider>

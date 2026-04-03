@@ -35,6 +35,7 @@ export interface PostComment {
   updatedAt: string;
   user: User;
   replies?: PostComment[];
+  isOptimistic?: boolean;
 }
 
 export interface Like {
