@@ -18,6 +18,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.72.1",
     "cloudinary": "^2.9.0",
@@ -32,6 +33,7 @@
     "pg-hstore": "^2.3.4",
     "redis": "^5.11.0",
     "sequelize": "^6.37.8",
+    "socket.io": "^4.8.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",

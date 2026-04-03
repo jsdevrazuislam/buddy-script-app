@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import redis from '../../config/redis';
 import { User } from '../../models';
 import commentRepository from '../../repositories/comment.repository';
+import { socketService, batchEmitter } from '../../services/socket.service';
 import { NotFoundError } from '../../utils/errors';
 
 export const createComment = async (userId: string, postId: string, text: string) => {
@@ -44,6 +45,10 @@ export const createComment = async (userId: string, postId: string, text: string
     redis.expire(pendingKey, 60), // Short TTL safety
     redis.incr(`count:comments:POST:${postId}`),
   ]);
+
+  // 4. Real-time updates via Socket.IO
+  socketService.emitToPost(postId, 'comment:created', optimisticComment);
+  batchEmitter.queueUpdate(postId, 'comments', 1);
 
   return optimisticComment;
 };
@@ -94,6 +99,10 @@ export const createReply = async (userId: string, parentId: string, text: string
     redis.expire(pendingKey, 60),
     redis.incr(`count:comments:POST:${parentComment.postId}`),
   ]);
+
+  // 4. Real-time updates via Socket.IO
+  socketService.emitToPost(parentComment.postId, 'reply:created', optimisticReply);
+  batchEmitter.queueUpdate(parentComment.postId, 'comments', 1);
 
   return optimisticReply;
 };

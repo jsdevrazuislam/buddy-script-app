@@ -17,8 +17,11 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Buddy Script - Your Social Hub',
+  title: 'Buddy Script',
   description: 'Connect with friends and share your life.',
+  icons: {
+    icon: '/assets/images/logo-copy.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

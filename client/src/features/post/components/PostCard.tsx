@@ -8,8 +8,9 @@ import React, { useState } from 'react';
 import { ReactionModal } from '@/components/common/ReactionModal';
 import { useComments } from '@/features/comment/hooks/useComments';
 import { useToggleLike, useLikers } from '@/features/like/hooks/useLikes';
+import { useSocket } from '@/features/socket/hooks/useSocket';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Post, Comment } from '@/types';
+import { Post, PostComment } from '@/types';
 
 interface PostCardProps {
   post: Post;
@@ -22,6 +23,9 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const { data: likers } = useLikers(post.id, 'POST');
   const [isDropOpen, setIsDropOpen] = useState(false);
   const validLikers = likers?.slice(0, 5) || [];
+
+  // Register real-time sync for this post
+  useSocket(post.id);
 
   const handleLike = () => {
     toggleLike({ targetId: post.id, targetType: 'POST' });
@@ -468,7 +472,7 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
   );
 };
 
-const CommentItem: React.FC<{ comment: Comment; postId: string }> = ({ comment, postId }) => {
+const CommentItem: React.FC<{ comment: PostComment; postId: string }> = ({ comment, postId }) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isReactionModalOpen, setIsReactionModalOpen] = useState(false);
@@ -630,7 +634,7 @@ const CommentItem: React.FC<{ comment: Comment; postId: string }> = ({ comment, 
         )}
         {comment.replies && comment.replies.length > 0 && (
           <div className="_timline_comment_nested mt-3">
-            {comment.replies.map((reply: Comment) => (
+            {comment.replies.map((reply: PostComment) => (
               <CommentItem key={reply.id} comment={reply} postId={postId} />
             ))}
           </div>

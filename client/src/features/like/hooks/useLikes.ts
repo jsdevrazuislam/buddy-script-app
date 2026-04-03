@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, InfiniteData, useQuery } from '@tanstack/react-query';
 
-import { TargetType, Post, Comment, FeedResponse } from '@/types';
+import { TargetType, Post, PostComment, FeedResponse } from '@/types';
 
 import { likeApi } from '../services/likeApi';
 
@@ -20,7 +20,7 @@ export const useToggleLike = (postId?: string) => {
 
       const previousFeed = queryClient.getQueryData<InfiniteData<FeedResponse>>(['posts', 'feed']);
       const previousComments = postId
-        ? queryClient.getQueryData<Comment[]>(['comments', postId])
+        ? queryClient.getQueryData<PostComment[]>(['comments', postId])
         : undefined;
 
       // Optimistic update
@@ -45,12 +45,12 @@ export const useToggleLike = (postId?: string) => {
           };
         });
       } else if (postId && (targetType === 'COMMENT' || targetType === 'REPLY')) {
-        queryClient.setQueriesData<Comment[]>({ queryKey: ['comments', postId] }, (old) => {
+        queryClient.setQueriesData<PostComment[]>({ queryKey: ['comments', postId] }, (old) => {
           if (!old) return old;
           const oldArray = Array.isArray(old) ? old : undefined;
           if (!Array.isArray(oldArray)) return old;
 
-          return oldArray.map((comment: Comment) => {
+          return oldArray.map((comment: PostComment) => {
             if (comment.id === targetId) {
               return {
                 ...comment,
@@ -61,7 +61,7 @@ export const useToggleLike = (postId?: string) => {
             if (comment.replies) {
               return {
                 ...comment,
-                replies: comment.replies.map((reply: Comment) => {
+                replies: comment.replies.map((reply: PostComment) => {
                   if (reply.id === targetId) {
                     return {
                       ...reply,
@@ -100,17 +100,17 @@ export const useToggleLike = (postId?: string) => {
           };
         });
       } else if (postId) {
-        queryClient.setQueriesData<Comment[]>({ queryKey: ['comments', postId] }, (old) => {
+        queryClient.setQueriesData<PostComment[]>({ queryKey: ['comments', postId] }, (old) => {
           if (!old) return old;
           const oldArray = Array.isArray(old) ? old : undefined;
           if (!Array.isArray(oldArray)) return old;
 
-          return oldArray.map((comment: Comment) => {
+          return oldArray.map((comment: PostComment) => {
             if (comment.id === targetId) return { ...comment, ...data };
             if (comment.replies) {
               return {
                 ...comment,
-                replies: comment.replies.map((reply: Comment) =>
+                replies: comment.replies.map((reply: PostComment) =>
                   reply.id === targetId ? { ...reply, ...data } : reply,
                 ),
               };
@@ -128,7 +128,7 @@ export const useToggleLike = (postId?: string) => {
       _err,
       _variables,
       context:
-        | { previousFeed?: InfiniteData<FeedResponse>; previousComments?: Comment[] }
+        | { previousFeed?: InfiniteData<FeedResponse>; previousComments?: PostComment[] }
         | undefined,
     ) => {
       if (context?.previousFeed) {

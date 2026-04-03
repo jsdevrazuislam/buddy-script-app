@@ -94,7 +94,8 @@ export const ReactionModal: React.FC<ReactionModalProps> = ({
                     <Image
                       src={user.avatar || '/assets/images/profile.png'}
                       alt=""
-                      fill
+                      width={40}
+                      height={40}
                       style={{ objectFit: 'cover' }}
                     />
                   </div>

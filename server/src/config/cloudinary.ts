@@ -18,7 +18,7 @@ export const generateSignedUploadUrl = async (folder: string = 'social_feed') =>
       timestamp,
       folder,
     },
-    process.env.CLOUDINARY_API_SECRET!,
+    process.env.CLOUDINARY_API_SECRET as string,
   );
 
   return {

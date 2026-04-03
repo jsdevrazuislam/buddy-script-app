@@ -9,13 +9,14 @@ import swaggerUi from 'swagger-ui-express';
 import sequelize from './config/database';
 import { reactionQueue, commentQueue } from './config/queue';
 import { connectRedis } from './config/redis';
+import { initSocket } from './config/socket';
 import swaggerOptions from './config/swagger';
-import './models'; // Initialize associations
 import { errorHandler } from './middlewares/error.middleware';
+import './models'; // Initialize associations
 import routes from './routes';
 import { logger } from './utils/logger';
-import './workers/reaction.worker';
 import './workers/comment.worker';
+import './workers/reaction.worker';
 
 dotenv.config();
 
@@ -59,20 +60,22 @@ app.use('/api/v1', routes);
 app.use(errorHandler);
 
 // Start Server
+
 const startServer = async () => {
   try {
     // Database connection
     await sequelize.authenticate();
     logger.info('Database Connection established successfully.');
 
-    // Sync models (in production use migrations instead)
-    // alter:true re-inspects and modifies every column on every restart — very slow.
-    // Use DB_SYNC_ALTER=true env var only when you need a schema migration.
+    // Sync models
     if (process.env.NODE_ENV === 'development') {
       const alterSchema = process.env.DB_SYNC_ALTER === 'true';
       logger.info(`Syncing Database Models (alter=${alterSchema})...`);
       await sequelize.sync({ alter: alterSchema });
     }
+
+    // Initialize Socket Server with app
+    const { httpServer } = initSocket(app);
 
     // Redis connection
     try {
@@ -98,7 +101,7 @@ const startServer = async () => {
       logger.warn('Redis connection failed, continuing without cache:', redisError);
     }
 
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       logger.info(`Server is running at http://localhost:${port}`);
       logger.info(`API Docs available at http://localhost:${port}/api-docs`);
     });

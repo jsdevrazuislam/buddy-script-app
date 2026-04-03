@@ -7,7 +7,7 @@ import * as likeService from './like.service';
 
 export const toggleLike = catchAsync(async (req: AuthRequest, res: Response) => {
   const { targetId, targetType } = req.body;
-  const result = await likeService.toggleLike(req.user!.id, targetId, targetType);
+  const result = await likeService.toggleLike(req.user?.id as string, targetId, targetType);
   res.status(200).json({
     status: 'success',
     data: result,

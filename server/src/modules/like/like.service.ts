@@ -1,5 +1,6 @@
 import redis from '../../config/redis';
 import likeRepository from '../../repositories/like.repository';
+import { socketService, batchEmitter } from '../../services/socket.service';
 
 const CACHE_TTL = 3600; // 1 hour
 
@@ -50,8 +51,34 @@ export const toggleLike = async (
     }),
   );
 
-  // Ensure the worker knows there is work (optional if using repeatable job)
-  // await reactionQueue.add('process-reactions', {}, { jobId: 'reaction-batcher', repeat: { every: 5000 } });
+  // 5. Real-time updates via Socket.IO
+  const postId =
+    targetType === 'POST'
+      ? targetId
+      : (await (await import('../../repositories/comment.repository')).default.findById(targetId))
+          ?.postId;
+
+  if (postId) {
+    // Aggregate count updates for high-throughput
+    const countIncrement = action === 'like' ? 1 : -1;
+
+    // Total likes specifically for this target (to fix comment like updates)
+    const rawTotalLikes = await redis.get(`count:likes:${targetType}:${targetId}`);
+    const totalLikes = rawTotalLikes ? parseInt(rawTotalLikes) : null;
+
+    if (targetType === 'POST') {
+      batchEmitter.queueUpdate(postId, 'likes', countIncrement);
+    }
+
+    // Also emit specific action (can be throttled further if millions of events)
+    socketService.emitToPost(postId, `post:${action}d`, {
+      userId,
+      targetId,
+      targetType,
+      postId,
+      totalLikes,
+    });
+  }
 
   return { liked: !isLiked };
 };

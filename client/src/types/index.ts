@@ -23,7 +23,7 @@ export interface Post {
   user: User;
 }
 
-export interface Comment {
+export interface PostComment {
   id: string;
   userId: string;
   postId: string;
@@ -34,7 +34,7 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   user: User;
-  replies?: Comment[];
+  replies?: PostComment[];
 }
 
 export interface Like {
