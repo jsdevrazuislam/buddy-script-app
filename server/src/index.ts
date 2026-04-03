@@ -24,7 +24,7 @@ dotenv.config();
 
 // ─── Production Secret Validation ────────────────────────────────────────────
 if (process.env.NODE_ENV === 'production') {
-  const required = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DB_URL', 'REDIS_HOST'];
+  const required = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DB_HOST', 'REDIS_HOST'];
   const missing = required.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     logger.error(`[FATAL] Missing required environment variables: ${missing.join(', ')}`);
