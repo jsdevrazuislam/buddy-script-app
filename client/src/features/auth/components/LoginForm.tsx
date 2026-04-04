@@ -199,7 +199,7 @@ export const LoginForm: React.FC = () => {
                           className="_social_login_form_btn_link _btn1"
                           disabled={isLoggingIn}
                         >
-                          {isLoggingIn ? 'Logging in...' : 'Login now'}
+                          {isLoggingIn ? 'loading...' : 'Login now'}
                         </button>
                       </div>
                     </div>

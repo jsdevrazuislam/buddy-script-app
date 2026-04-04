@@ -39,14 +39,7 @@ export const PostCreator: React.FC = () => {
 
       if (image) {
         // 1. Get signed upload parameters from backend
-        const { timestamp, signature, cloudName, apiKey, folder } =
-          (await postApi.getUploadUrl()) as {
-            timestamp: number;
-            signature: string;
-            cloudName: string;
-            apiKey: string;
-            folder: string;
-          };
+        const { timestamp, signature, cloudName, apiKey, folder } = await postApi.getUploadUrl();
 
         // 2. Upload directly to Cloudinary
         const formData = new FormData();

@@ -16,11 +16,10 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5,242,880 bytes
 export const generateSignedUploadUrl = async (folder: string = 'social_feed') => {
   const timestamp = Math.round(new Date().getTime() / 1000);
 
-  // Include max_file_size so Cloudinary rejects oversized uploads at the CDN edge
+  // Include params that are REQUIRED to be signed
   const signParams = {
     timestamp,
     folder,
-    max_file_size: MAX_FILE_SIZE_BYTES,
   };
 
   const signature = cloudinary.utils.api_sign_request(

@@ -26,6 +26,7 @@ export const postApi = {
     cloudName: string;
     apiKey: string;
     folder: string;
+    maxFileSizeBytes: number;
   }> => {
     const response = await apiClient.get<
       ApiResponse<{
@@ -34,6 +35,7 @@ export const postApi = {
         cloudName: string;
         apiKey: string;
         folder: string;
+        maxFileSizeBytes: number;
       }>
     >('/posts/upload-url');
     return response.data.data;
