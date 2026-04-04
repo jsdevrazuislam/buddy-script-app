@@ -34,15 +34,15 @@ Buddy Script is a production-grade, real-time social media platform built with a
 ## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
-- **Node.js** v18+
+- **Node.js** v20+
 - **Docker** (for PostgreSQL + Redis)
 - A **Cloudinary** account (free tier works)
 
 ### 1. Clone & Install
 
 ```bash
-git clone <repo-url>
-cd buddy-script
+git clone https://github.com/jsdevrazuislam/buddy-script-app
+cd buddy-script-app
 
 # Install all workspace dependencies
 npm install          # root hooks
@@ -64,8 +64,7 @@ cp server/.env.example server/.env
 |---|---|---|
 | `PORT` | Server port | `9000` |
 | `NODE_ENV` | Environment (`development` / `production`) | `development` |
-| `DB_URL` | Full PostgreSQL connection string | `postgres://user:pass@localhost:5432/buddy_db` |
-| `DB_HOST` | PostgreSQL host (if not using `DB_URL`) | `localhost` |
+| `DB_HOST` | PostgreSQL host | `localhost` |
 | `DB_PORT` | PostgreSQL port | `5432` |
 | `DB_USER` | PostgreSQL username | `postgres` |
 | `DB_PASS` | PostgreSQL password | `postgres` |
@@ -83,7 +82,7 @@ cp server/.env.example server/.env
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret | `your_api_secret` |
 | `CLIENT_URL` | Frontend origin (for CORS) | `http://localhost:3000` |
 
-> **⚠️ Production:** `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `DB_URL`, and `REDIS_HOST` are **required** — the server will refuse to start if they are missing.
+> **⚠️ Production:** `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `DB_HOST`, and `REDIS_HOST` are **required** — the server will refuse to start if they are missing.
 
 #### Frontend — `client/.env.local`
 
