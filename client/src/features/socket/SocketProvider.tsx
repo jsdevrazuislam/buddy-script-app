@@ -159,43 +159,80 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     socketInstance.on('reply:liked', handleLikeEvent);
     socketInstance.on('reply:unliked', handleLikeEvent);
 
-    interface CommentPayload {
-      id: string;
-      postId: string;
-      parentId?: string | null;
-    }
-
-    socketInstance.on('comment:created', (comment: CommentPayload) => {
+    // The payload emitted from the server matches the PostComment type
+    socketInstance.on('comment:created', (newComment: PostComment) => {
       // Update comments list for the post
-      queryClient.setQueriesData({ queryKey: ['comments', comment.postId] }, (oldData: unknown) => {
-        if (!oldData) return oldData;
+      queryClient.setQueriesData(
+        { queryKey: ['comments', newComment.postId] },
+        (oldData: unknown) => {
+          if (!oldData) return oldData;
 
-        // Ensure we are adding to the existing array and deduplicate if needed
-        const existing = Array.isArray(oldData) ? oldData : [];
-        if (existing.some((c: unknown) => (c as { id: string }).id === comment.id)) return oldData;
+          // Ensure we are adding to the existing array
+          const existing = Array.isArray(oldData) ? oldData : [];
 
-        return [comment, ...existing];
-      });
+          // 1. Deduplicate by ID (prevents re-adding if already added)
+          if (existing.some((c: PostComment) => c.id === newComment.id)) return oldData;
+
+          // 2. Check for matching optimistic comment (same text and user)
+          // This is safe within the scope of a single post query
+          const optimisticIndex = existing.findIndex(
+            (c: PostComment) =>
+              (c.isOptimistic || c.id.startsWith('temp-')) &&
+              c.text === newComment.text &&
+              c.userId === newComment.userId,
+          );
+
+          if (optimisticIndex !== -1) {
+            // Replace the optimistic comment with the real one
+            const updated = [...existing];
+            updated[optimisticIndex] = newComment;
+            return updated;
+          }
+
+          // 3. Otherwise add as new to the front (DESC order)
+          return [newComment, ...existing];
+        },
+      );
     });
 
-    socketInstance.on('reply:created', (reply: CommentPayload) => {
-      queryClient.setQueriesData({ queryKey: ['comments', reply.postId] }, (oldData: unknown) => {
-        if (!oldData) return oldData;
+    socketInstance.on('reply:created', (newReply: PostComment) => {
+      queryClient.setQueriesData(
+        { queryKey: ['comments', newReply.postId] },
+        (oldData: unknown) => {
+          if (!oldData) return oldData;
 
-        const existing = Array.isArray(oldData) ? oldData : [];
-        return existing.map((comment: unknown) => {
-          const c = comment as { id: string; replies?: unknown[] };
-          if (c.id === reply.parentId) {
-            const replies = c.replies || [];
-            if (replies.some((r: unknown) => (r as { id: string }).id === reply.id)) return c;
-            return {
-              ...c,
-              replies: [reply, ...replies],
-            };
-          }
-          return c;
-        });
-      });
+          const existing = Array.isArray(oldData) ? oldData : [];
+          return existing.map((comment: PostComment) => {
+            if (comment.id === newReply.parentId) {
+              const replies = comment.replies || [];
+
+              // 1. Deduplicate by ID
+              if (replies.some((r: PostComment) => r.id === newReply.id)) return comment;
+
+              // 2. Check for matching optimistic reply
+              const optimisticIndex = replies.findIndex(
+                (r: PostComment) =>
+                  (r.isOptimistic || r.id.startsWith('temp-')) &&
+                  r.text === newReply.text &&
+                  r.userId === newReply.userId,
+              );
+
+              if (optimisticIndex !== -1) {
+                const updatedReplies = [...replies];
+                updatedReplies[optimisticIndex] = newReply;
+                return { ...comment, replies: updatedReplies };
+              }
+
+              // 3. Add as new
+              return {
+                ...comment,
+                replies: [newReply, ...replies],
+              };
+            }
+            return comment;
+          });
+        },
+      );
     });
 
     setTimeout(() => {

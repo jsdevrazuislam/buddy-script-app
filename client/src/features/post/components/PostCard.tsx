@@ -527,7 +527,7 @@ const CommentItem: React.FC<{ comment: PostComment; postId: string }> = ({ comme
             className="_comment_status_text"
             style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
           >
-            <span>{comment.text}</span>
+            <span>{comment.text}</span> <br />
             {comment.isOptimistic && (
               <span className="ml-2 text-xs text-gray-400 italic">Sending...</span>
             )}

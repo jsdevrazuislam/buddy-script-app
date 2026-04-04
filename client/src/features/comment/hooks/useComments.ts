@@ -55,6 +55,16 @@ export const useComments = (postId: string) => {
 
       return { previousComments };
     },
+    onSuccess: (newComment: PostComment) => {
+      queryClient.setQueryData<PostComment[]>(['comments', postId, limit], (old) => {
+        if (!old) return [newComment];
+        return old.map((c: PostComment) =>
+          (c.isOptimistic || c.id.startsWith('temp-')) && c.text === newComment.text
+            ? newComment
+            : c,
+        );
+      });
+    },
     onError: (_err, _text, context) => {
       if (context?.previousComments) {
         queryClient.setQueryData(['comments', postId, limit], context.previousComments);
@@ -101,6 +111,26 @@ export const useComments = (postId: string) => {
       }
 
       return { previousComments };
+    },
+    onSuccess: (newReply: PostComment) => {
+      queryClient.setQueryData<PostComment[]>(['comments', postId, limit], (old) => {
+        if (!old) return [];
+        return old.map((comment) => {
+          if (comment.id === newReply.parentId) {
+            const replies = comment.replies || [];
+            const optimisticIndex = replies.findIndex(
+              (r) => (r.isOptimistic || r.id.startsWith('temp-')) && r.text === newReply.text,
+            );
+
+            if (optimisticIndex !== -1) {
+              const updatedReplies = [...replies];
+              updatedReplies[optimisticIndex] = newReply;
+              return { ...comment, replies: updatedReplies };
+            }
+          }
+          return comment;
+        });
+      });
     },
     onError: (_err, _vars, context) => {
       if (context?.previousComments) {
